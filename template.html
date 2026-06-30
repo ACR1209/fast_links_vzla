@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Links">
+<title>{{TITLE}}</title>
+<style>{{CSS}}</style>
+</head>
+<body>
+<header>
+  <h1>{{TITLE}}</h1>
+  <p>{{SUBTITLE}}</p>
+</header>
+<input id="search" type="search" placeholder="Buscar..." autocomplete="off" spellcheck="false">
+<nav id="toc"></nav>
+<main id="links"></main>
+<p id="no-results">Sin resultados.</p>
+<p id="error">Error al cargar.</p>
+<script>window.__LINKS__={{LINKS_JSON}};</script>
+<script>{{JS}}</script>
+<script>window.addEventListener('load',function(){var s=document.createElement('script');s.src='https://cloud.umami.is/script.js';s.setAttribute('data-website-id','f9b8c201-2435-4c12-8392-0ab11d26558f');document.head.appendChild(s);});</script>
+</body>
+</html>

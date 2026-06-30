@@ -1,0 +1,16 @@
+{
+  "name": "fast-links-vzla",
+  "version": "1.0.0",
+  "description": "Ultra-light static link page builder from PocketBase",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js",
+    "watch": "node build.js --watch"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0"
+  }
+}
