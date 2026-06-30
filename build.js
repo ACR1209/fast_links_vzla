@@ -11,10 +11,10 @@ const https = require('https');
 const http = require('http');
 
 // --- Config (override via env) ---
-const PB_URL = process.env.PB_URL || 'http://localhost:8090';
+const PB_URL = process.env.PB_URL || 'https://fastlinks-venezuela.pockethost.io';
 const PB_COLLECTION = process.env.PB_COLLECTION || 'links';
-const TITLE = process.env.SITE_TITLE || 'Links';
-const SUBTITLE = process.env.SITE_SUBTITLE || '';
+const TITLE = process.env.SITE_TITLE || 'AidLinksVenezuela';
+const SUBTITLE = process.env.SITE_SUBTITLE || 'Recursos digitales tras el terremoto 🇻🇪 — Reporta, Busca, Encuentra personas y mascotas; Centros de Acopio, Listados y Más.';
 const OUT_DIR = path.join(__dirname, 'dist');
 const OUT_FILE = path.join(OUT_DIR, 'index.html');
 
