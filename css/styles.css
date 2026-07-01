@@ -88,6 +88,13 @@ header p{
 
 .toc-item:hover{border-color:var(--accent);color:var(--text)}
 
+@media (max-width:480px){
+  .toc-item{
+    font-size:0.85rem;
+    padding:8px 14px;
+  }
+}
+
 #links{
   width:100%;
   max-width:480px;
