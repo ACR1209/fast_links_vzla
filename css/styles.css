@@ -154,3 +154,17 @@ header p{
   margin-top:24px;
   display:none;
 }
+
+footer#disclaimer{
+  width:100%;
+  max-width:480px;
+  margin-top:40px;
+  padding-top:16px;
+  border-top:1px solid var(--border);
+  color:var(--muted);
+  font-size:0.75rem;
+  line-height:1.5;
+  text-align:center;
+}
+
+footer#disclaimer p+p{margin-top:8px}
