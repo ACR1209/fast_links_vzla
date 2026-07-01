@@ -68,4 +68,13 @@
     noResults.style.display=anyVisible||!q?'none':'block';
     toc.style.display=q?'none':'flex';
   });
+
+  var backBtn=document.getElementById('back-to-links');
+  window.addEventListener('scroll',function(){
+    var below=toc.getBoundingClientRect().bottom<0;
+    backBtn.classList.toggle('visible',below);
+  });
+  backBtn.addEventListener('click',function(){
+    toc.scrollIntoView({behavior:'smooth'});
+  });
 })();
