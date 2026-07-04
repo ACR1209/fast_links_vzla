@@ -11,8 +11,7 @@ const https = require('https');
 const http = require('http');
 
 // --- Config (override via env) ---
-const PB_URL = process.env.PB_URL || 'https://fastlinks-venezuela.pockethost.io';
-const PB_COLLECTION = process.env.PB_COLLECTION || 'links';
+const LINKTREE_URL = process.env.LINKTREE_URL || 'https://linktr.ee/AidLinkTerremotosVenezuela';
 const TITLE = process.env.SITE_TITLE || 'AidLinksVenezuela';
 const SUBTITLE = process.env.SITE_SUBTITLE || 'Recursos digitales tras el terremoto 🇻🇪 — Reporta, Busca, Encuentra personas y mascotas; Centros de Acopio, Listados y Más.';
 const OUT_DIR = path.join(__dirname, 'dist');
@@ -58,38 +57,44 @@ function minifyJS(js) {
     .trim();
 }
 
-function getCategoryName(record) {
-  const exp = record.expand && record.expand.categories;
-  if (!exp) return '';
-  if (Array.isArray(exp)) return exp[0] ? exp[0].name : '';
-  return exp.name || '';
-}
+function parseLinktree(html) {
+  const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (!m) throw new Error('__NEXT_DATA__ not found in Linktree page');
+  const links = JSON.parse(m[1]).props.pageProps.links;
 
-function groupByCategory(records) {
-  const order = [];
-  const map = Object.create(null);
-  for (const r of records) {
-    const cat = getCategoryName(r);
-    if (!map[cat]) { map[cat] = []; order.push(cat); }
-    map[cat].push({ name: r.name, target: r.target });
+  const groups = links
+    .filter(l => l.type === 'GROUP')
+    .sort((a, b) => a.position - b.position);
+
+  const byParent = Object.create(null);
+  for (const l of links) {
+    if (l.type === 'GROUP' || !l.url) continue;
+    if (/aidlinksvenezuela\.org/i.test(l.url)) continue;
+    const pid = l.parent ? l.parent.id : '';
+    (byParent[pid] || (byParent[pid] = [])).push(l);
   }
-  return order.map(cat => ({ cat, links: map[cat] }));
+
+  return groups
+    .filter(g => byParent[g.id])
+    .map(g => ({
+      cat: g.title.trim(),
+      links: byParent[g.id]
+        .sort((a, b) => a.position - b.position)
+        .map(l => ({ name: l.title.trim(), target: l.url })),
+    }));
 }
 
 async function build() {
-  const url = `${PB_URL}/api/collections/${PB_COLLECTION}/records?perPage=200&sort=+categories.name,+name&expand=categories`;
-  console.log(`Fetching ${url}`);
+  console.log(`Fetching ${LINKTREE_URL}`);
 
   let groups = [];
   try {
-    const raw = await fetch(url);
-    const data = JSON.parse(raw);
-    const records = data.items || data.docs || [];
-    groups = groupByCategory(records);
-    const total = records.length;
+    const html = await fetch(LINKTREE_URL);
+    groups = parseLinktree(html);
+    const total = groups.reduce((n, g) => n + g.links.length, 0);
     console.log(`Fetched ${total} links in ${groups.length} categories`);
   } catch (err) {
-    console.error(`PocketBase fetch failed: ${err.message}`);
+    console.error(`Linktree fetch failed: ${err.message}`);
     console.error('Building with empty links list.');
   }
 

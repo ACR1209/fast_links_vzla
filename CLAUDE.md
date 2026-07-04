@@ -1,6 +1,6 @@
 # fast-links-vzla
 
-Static link page builder. Fetches PocketBase `links` collection, outputs single self-contained `dist/index.html`.
+Static link page builder. Scrapes a Linktree page's `__NEXT_DATA__` (GROUP = category, CLASSIC/COMMUNITY_CHANNEL/EXTENSION = link), outputs single self-contained `dist/index.html`.
 
 ## Core constraint: ultra-low bundle size
 
@@ -20,18 +20,18 @@ Rules:
 ## Project layout
 
 ```
-build.js          # single build script — fetches PB, inlines css+js, writes dist/
+build.js          # single build script — scrapes Linktree, inlines css+js, writes dist/
 template.html     # HTML skeleton with {{placeholders}}
 css/styles.css    # all CSS (concatenated + minified at build)
 js/app.js         # all JS  (concatenated + minified at build)
 dist/index.html   # output — deploy this file only
-.env.example      # copy to .env, fill PB_URL etc.
+.env.example      # copy to .env, fill LINKTREE_URL etc.
 ```
 
 ## Build
 
 ```bash
-PB_URL=https://your-pb.example.com node build.js
+LINKTREE_URL=https://linktr.ee/your-page node build.js
 ```
 
 Or with `.env` loaded manually:
@@ -40,14 +40,9 @@ Or with `.env` loaded manually:
 export $(cat .env | xargs) && node build.js
 ```
 
-## PocketBase schema
+## Linktree parsing
 
-Collection: `links`
-
-| field    | type   |
-|----------|--------|
-| `name`   | text   |
-| `target` | url    |
+`build.js` fetches the Linktree page HTML and pulls `props.pageProps.links` out of the embedded `__NEXT_DATA__` script tag. Items of `type: "GROUP"` are categories (sorted by `position`); items of type `CLASSIC`/`COMMUNITY_CHANNEL`/`EXTENSION` with a `parent.id` matching a group are that group's links (sorted by `position`). Items without a `url` (besides groups) are skipped.
 
 ## What NOT to do
 
