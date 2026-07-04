@@ -20,7 +20,14 @@ const OUT_FILE = path.join(OUT_DIR, 'index.html');
 function fetch(url) {
   return new Promise((resolve, reject) => {
     const mod = url.startsWith('https') ? https : http;
-    mod.get(url, (res) => {
+    const opts = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9,es;q=0.8',
+      },
+    };
+    mod.get(url, opts, (res) => {
       let data = '';
       res.on('data', (c) => data += c);
       res.on('end', () => {
@@ -84,19 +91,27 @@ function parseLinktree(html) {
     }));
 }
 
+async function fetchWithRetry(url, attempts = 3) {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      return await fetch(url);
+    } catch (err) {
+      if (i === attempts) throw err;
+      const delay = 1000 * 2 ** (i - 1);
+      console.error(`Fetch attempt ${i} failed (${err.message}), retrying in ${delay}ms...`);
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+}
+
 async function build() {
   console.log(`Fetching ${LINKTREE_URL}`);
 
-  let groups = [];
-  try {
-    const html = await fetch(LINKTREE_URL);
-    groups = parseLinktree(html);
-    const total = groups.reduce((n, g) => n + g.links.length, 0);
-    console.log(`Fetched ${total} links in ${groups.length} categories`);
-  } catch (err) {
-    console.error(`Linktree fetch failed: ${err.message}`);
-    console.error('Building with empty links list.');
-  }
+  const page = await fetchWithRetry(LINKTREE_URL);
+  const groups = parseLinktree(page);
+  const total = groups.reduce((n, g) => n + g.links.length, 0);
+  console.log(`Fetched ${total} links in ${groups.length} categories`);
+  if (total === 0) throw new Error('Parsed 0 links from Linktree — refusing to build an empty page');
 
   const css = minifyCSS(readDir(path.join(__dirname, 'css')));
   const js = minifyJS(readDir(path.join(__dirname, 'js')));
