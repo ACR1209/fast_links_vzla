@@ -147,7 +147,7 @@ header p{
   transform:translateY(0);
 }
 
-#error{
+#no-results,#error{
   color:var(--accent);
   font-size:0.85rem;
   text-align:center;
